@@ -37,6 +37,24 @@ type MemoryStore struct {
 	links map[string]Link
 }
 
+func NewMemoryStore() *MemoryStore {
+	return &MemoryStore{
+		links: make(map[string]Link),
+	}
+}
+
+func (m *MemoryStore) Save(_ context.Context, link Link) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if _, exists := m.links[link.Code]; exists {
+		return ErrCodeExists
+	}
+
+	m.links[link.Code] = link
+	return nil
+}
+
 func (m *MemoryStore) GetByCode(_ context.Context, code string) (Link, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
